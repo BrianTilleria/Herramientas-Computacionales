@@ -21,7 +21,7 @@ mod_E_FEM_12= np.loadtxt(os.path.join(results_dir, "mod_E_FEM_12.txt"))
 mod_E_analytic_12= np.loadtxt(os.path.join(results_dir, "mod_E_analytic_12.txt"))
 
 # Valors máximos y mínmos de potencial
-vmax, vmin = float(phi_values_FEM.max()), float(phi_values_FEM.min())
+vmin, vmax = 0.0, float(mod_E_FEM_12.max())
 
 ### Prueba de CUTMESHCUT
 
@@ -39,6 +39,10 @@ cb = plt.colorbar(mappable, ax=ax, pad=0.06, shrink=0.85)
 cb.set_label('TI [V/m]', fontsize=12)
 
 plt.tight_layout()
+ax.set_title('TI - FEM', fontsize=14, pad=12)
+ax.set_ylabel('y [cm]', fontsize=12, labelpad=8)
+ax.set_zlabel('z [cm]', fontsize=12, labelpad=8)
+ax.tick_params(axis='both', which='major', labelsize=10)
 plt.savefig(os.path.join(results_dir, "TI_FEM_cm_cut.png"), dpi=600)
 print("Figura guardada en 'results_malla_2M/TI_FEM_cm_cut.png'")
 plt.show()
@@ -89,7 +93,7 @@ ax.tick_params(axis='x', which='both',     # sin marcas ni etiquetas
                labelbottom=False, length=0)
 
 # === Título y ejes con unidades ===
-ax.set_title('TI - Analytic', fontsize=14, pad=12)
+ax.set_title('TI - Analítica', fontsize=14, pad=12)
 ax.set_ylabel('y [cm]', fontsize=12, labelpad=8)
 ax.set_zlabel('z [cm]', fontsize=12, labelpad=8)
 ax.tick_params(axis='both', which='major', labelsize=10)
@@ -146,9 +150,12 @@ E_matrix_FEM = np.loadtxt(os.path.join(results_dir, "E_matrix_FEM.txt"))
 mask = (coords[:, 0] > -0.2) & (coords[:, 0] < 0) 
 E_mag_analytic = np.linalg.norm(E_matrix_analytic[:, 0:2], axis=1)
 E_mag_FEM = np.linalg.norm(E_matrix_FEM[:, 0:2], axis=1)
+
+# Graficamos el campo eléctrico FEM
+
 colmap = plt.get_cmap("jet")
 idx= np.where(mask)[0]
-i2m.plotmesh(np.column_stack([coords, E_mag_FEM]), cells1,'(x<0) & (x>-0.3)',cmap= colmap)
+i2m.plotmesh(np.column_stack([coords, E_mag_FEM /np.max(E_mag_FEM)]), cells1,'(x<0) & (x>-0.3)',cmap= colmap)
 ax = plt.gca()
 ax.view_init(elev=0, azim=0)
 ax.quiver(coords[idx,0], coords[idx,1], coords[idx,2], E_matrix_FEM[idx,0], E_matrix_FEM[idx,1], E_matrix_FEM[idx,2], 
@@ -174,6 +181,38 @@ cb.set_label('|E| [V/m]', fontsize=12)
 plt.tight_layout()
 plt.savefig(os.path.join(results_dir, "Campo_E_FEM_12.png"), dpi=600)
 print("Figura guardada en 'results_malla_2M/Campo_E_FEM_12.png'")
+plt.show()
+
+# Graficamos el campo eléctrico analítico
+
+colmap = plt.get_cmap("jet")
+idx= np.where(mask)[0]
+i2m.plotmesh(np.column_stack([coords, E_mag_analytic /np.max(E_mag_analytic)]), cells1,'(x<0) & (x>-0.3)',cmap= colmap)
+ax = plt.gca()
+ax.view_init(elev=0, azim=0)
+ax.quiver(coords[idx,0], coords[idx,1], coords[idx,2], E_matrix_analytic[idx,0], E_matrix_analytic[idx,1], E_matrix_analytic[idx,2], 
+          length=0.4, normalize=True, cmap=colmap, color='w', linewidth=0.2)
+ax.set_xlabel('')                          # sin nombre
+ax.set_xticks([])                          # sin ticks
+ax.tick_params(axis='x', which='both',     # sin marcas ni etiquetas
+               labelbottom=False, length=0)
+
+# === Título y ejes con unidades ===
+ax.set_title('Campo eléctrico analítico', fontsize=14, pad=12)
+ax.set_ylabel('y [cm]', fontsize=12, labelpad=8)
+ax.set_zlabel('z [cm]', fontsize=12, labelpad=8)
+ax.tick_params(axis='both', which='major', labelsize=10)
+
+# Colorbar con etiqueta en V/m
+vmin, vmax = 0.0, float(E_mag_analytic.max())
+norm = Normalize(vmin=vmin, vmax=vmax)
+mappable = cm.ScalarMappable(norm=norm, cmap=colmap)
+mappable.set_array([])  # requerido por Matplotlib
+cb = plt.colorbar(mappable, ax=ax, pad=0.06, shrink=0.85)
+cb.set_label('|E| [V/m]', fontsize=12)
+plt.tight_layout()
+plt.savefig(os.path.join(results_dir, "Campo_E_analitico_12.png"), dpi=600)
+print("Figura guardada en 'results_malla_2M/Campo_E_analitico_12.png'")
 plt.show()
 
 
